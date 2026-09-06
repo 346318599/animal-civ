@@ -44,6 +44,18 @@ export class BattleScene extends Phaser.Scene {
   }
 
   create() {
+    // Fail-loud: any throw here used to silently leave BootScene on screen.
+    // We log to console AND rethrow so DevTools shows the real error;
+    // BootScene remains visible as the placeholder.
+    try {
+      this._createInner();
+    } catch (err) {
+      console.error('[BattleScene] create() failed:', err);
+      throw err;
+    }
+  }
+
+  _createInner() {
     // === 1. EventBus + 核心系统（BattleLoop + 输入 + 选择） ===
     this.eventBus = new EventBus();
     this.battleMap = this._buildDemoMap();
@@ -170,10 +182,11 @@ export class BattleScene extends Phaser.Scene {
 
   _buildDemoMap() {
     const map = new BattleMap({ cols: COLS, rows: ROWS });
-    // 全草地，少量森林/山脉点缀
+    // 全草地，少量森林/山脉点缀。
+    // 注意 Tile 合法地形为 plain/forest/mountain/water/desert（无 'grass'）。
     for (let y = 0; y < ROWS; y++) {
       for (let x = 0; x < COLS; x++) {
-        let terrain = 'grass';
+        let terrain = 'plain';
         if ((x === 3 && y === 2) || (x === 8 && y === 5)) terrain = 'forest';
         if ((x === 6 && y === 4))                      terrain = 'mountain';
         map.grid[y][x] = new Tile({ x, y, terrain });
