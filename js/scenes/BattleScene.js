@@ -69,7 +69,7 @@ export class BattleScene extends Phaser.Scene {
     this.inputHandler = new InputHandler({ tileSize: TILE_SIZE });
     this.selectionManager = new SelectionManager({
       eventBus: this.eventBus,
-      battleMap: this.battleMap,
+      map: this.battleMap,              // SelectionManager 的字段名是 `map`
       playerFaction: 'panda',
     });
 
