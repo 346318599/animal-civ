@@ -96,6 +96,9 @@ export class BootScene extends Phaser.Scene {
       });
       this.debugText.setScrollFactor(0).setDepth(1000);
     }
+
+    // W2 T2.4: kick off the BattleScene after a short delay
+    this.startBattleAfter();
   }
 
   update() {
@@ -106,5 +109,20 @@ export class BootScene extends Phaser.Scene {
         `W1 T1.1`
       );
     }
+  }
+
+  /**
+   * W2 T2.4 entry point — auto-start the BattleScene 600ms after the
+   * boot demo renders. Gives the eye time to see the placeholder
+   * before the real battle UI takes over.
+   */
+  startBattleAfter(delayMs = 600) {
+    if (this._battleScheduled) return;
+    this._battleScheduled = true;
+    this.time.delayedCall(delayMs, () => {
+      if (this.scene.get('BattleScene')) {
+        this.scene.start('BattleScene');
+      }
+    });
   }
 }

@@ -89,7 +89,7 @@ export class SelectionManager {
     // (1) Friendly unit -> select.
     if (occupant && occupant instanceof UnitInstance &&
         occupant.faction === this._playerFaction) {
-      this._setSelected(occupant.id);
+      this._setSelected(occupant.id, occupant.faction);
       return true;
     }
 
@@ -139,11 +139,11 @@ export class SelectionManager {
 
   // === Internal setters ===
 
-  _setSelected(unitId) {
+  _setSelected(unitId, faction) {
     if (this._unitId === unitId && this._targetTile === null) return;
     this._unitId = unitId;
     this._targetTile = null;
-    this._bus.emit(SelectionEvents.UNIT_SELECTED, { unitId });
+    this._bus.emit(SelectionEvents.UNIT_SELECTED, { unitId, faction });
   }
 
   _setTarget(targetTile) {

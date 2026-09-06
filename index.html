@@ -13,6 +13,29 @@
 <body>
   <div id="game-container" aria-label="Animal Civ Game"></div>
 
+  <!-- W2 T2.4 HUD (top overlay) + ActionPanel (bottom overlay) -->
+  <div id="hud" role="status" aria-live="polite">
+    <div class="hud-row">
+      <span class="hud-label">回合</span>
+      <span class="hud-value" id="hud-round">—</span>
+    </div>
+    <div class="hud-row">
+      <span class="hud-label">玩家</span>
+      <span class="hud-value" id="hud-player">—</span>
+    </div>
+    <div class="hud-row">
+      <span class="hud-label">阶段</span>
+      <span class="hud-value" id="hud-phase">—</span>
+    </div>
+  </div>
+
+  <div id="action-panel" role="toolbar" aria-label="行动面板">
+    <button type="button" class="action-btn" data-action="end-turn" disabled>结束回合</button>
+    <button type="button" class="action-btn" data-action="move" disabled>移动</button>
+    <button type="button" class="action-btn" data-action="attack" disabled>攻击</button>
+    <button type="button" class="action-btn" data-action="build" disabled>建造</button>
+  </div>
+
   <!-- Phaser 3.90 CDN (主 jsdelivr，备 unpkg) -->
   <script
     src="https://cdn.jsdelivr.net/npm/phaser@3.90.0/dist/phaser.min.js"

@@ -1,15 +1,18 @@
 /**
  * Animal Civ — main entry
- * Sprint 1 W1 T1.1: Phaser 3.90 Game config + BootScene 引导
+ * Sprint 1 W1 T1.1 + W2 T2.4: Phaser 3.90 Game config + scene registry.
+ *
+ * Scene flow (W2):
+ *   BootScene (W1 demo) -> auto-start BattleScene on W2 T2.4 entry.
  *
  * 设计要点：
  *  - Scale.FIT + CENTER_BOTH：桌面 + 移动端响应式（canvas 16:9 适配）
- *  - 仅注册 BootScene 一个 scene（W2 起加 BattleScene / MainMenuScene 等）
- *  - 监听 window load 后再实例化 Game（确保 CDN Phaser 已加载 + DOM 就绪）
  *  - 失败兜底：若 Phaser 全局未定义，5s 后报错（提示 CDN 被墙）
+ *  - HUD + ActionPanel 是 DOM overlay（不在 Phaser 内），BattleScene 在 create() 注入并 init()
  */
 
 import { BootScene } from './scenes/BootScene.js';
+import { BattleScene } from './scenes/BattleScene.js';
 
 const config = {
   type: Phaser.AUTO,                      // WebGL 优先，Canvas 兜底
@@ -25,7 +28,7 @@ const config = {
     pixelArt: false,                      // 灰盒渲染：不开 pixelArt
     antialias: true,
   },
-  scene: [BootScene],
+  scene: [BootScene, BattleScene],
 };
 
 function boot() {
