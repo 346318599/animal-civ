@@ -192,14 +192,19 @@ export class BattleScene extends Phaser.Scene {
         map.grid[y][x] = new Tile({ x, y, terrain });
       }
     }
-    // Panda 阵营（左上区域）
-    map.spawnBuilding(new BuildingInstance({ type: 'base', faction: 'panda', x: 1, y: 1 }));
-    map.spawnUnit(new UnitInstance({ type: 'soldier', faction: 'panda', x: 1, y: 2 }));
-    map.spawnUnit(new UnitInstance({ type: 'worker',  faction: 'panda', x: 2, y: 1 }));
+    // Panda 阵营（左上区域）—— 走 BattleMap plain-object API，让
+    // BattleMap 自己 mint id 并构造 BuildingInstance / UnitInstance。
+    // 不能调 `new BuildingInstance(...)`（漏 id 必抛）或传 `x, y`
+    // 平铺（应嵌套成 `position: {x, y}`）。这一块是 W2 T2.4 部署后
+    // 用户在 Console 看到的 `BuildingInstance: id must be a non-empty
+    // string` 的真正源头（hotfix #1/#2 漏了这一段）。
+    map.spawnBuilding({ type: 'base',     faction: 'panda', position: { x: 1,  y: 1 } });
+    map.spawnUnit    ({ type: 'soldier',  faction: 'panda', position: { x: 1,  y: 2 } });
+    map.spawnUnit    ({ type: 'worker',   faction: 'panda', position: { x: 2,  y: 1 } });
     // Wolf 阵营（右下区域）
-    map.spawnBuilding(new BuildingInstance({ type: 'base', faction: 'wolf', x: 10, y: 6 }));
-    map.spawnUnit(new UnitInstance({ type: 'soldier', faction: 'wolf', x: 10, y: 5 }));
-    map.spawnUnit(new UnitInstance({ type: 'soldier', faction: 'wolf', x: 9, y: 6 }));
+    map.spawnBuilding({ type: 'base',     faction: 'wolf',  position: { x: 10, y: 6 } });
+    map.spawnUnit    ({ type: 'soldier',  faction: 'wolf',  position: { x: 10, y: 5 } });
+    map.spawnUnit    ({ type: 'soldier',  faction: 'wolf',  position: { x: 9,  y: 6 } });
     return map;
   }
 
@@ -229,10 +234,10 @@ export class BattleScene extends Phaser.Scene {
   }
 
   _renderUnit(unit) {
-    const tile = this.battleMap.getTile(unit.x, unit.y);
+    const tile = this.battleMap.getTile(unit.position.x, unit.position.y);
     if (!tile) return null;
-    const px = MAP_OFFSET_X + unit.x * TILE_SIZE + TILE_SIZE / 2;
-    const py = MAP_OFFSET_Y + unit.y * TILE_SIZE + TILE_SIZE / 2;
+    const px = MAP_OFFSET_X + unit.position.x * TILE_SIZE + TILE_SIZE / 2;
+    const py = MAP_OFFSET_Y + unit.position.y * TILE_SIZE + TILE_SIZE / 2;
     const c = this.greybox.createUnit(px, py, unit.faction);
     c.setData('unitId', unit.id);
     c.setData('unit', unit);
@@ -241,10 +246,10 @@ export class BattleScene extends Phaser.Scene {
   }
 
   _renderBuilding(building) {
-    const tile = this.battleMap.getTile(building.x, building.y);
+    const tile = this.battleMap.getTile(building.position.x, building.position.y);
     if (!tile) return null;
-    const px = MAP_OFFSET_X + building.x * TILE_SIZE + TILE_SIZE / 2;
-    const py = MAP_OFFSET_Y + building.y * TILE_SIZE + TILE_SIZE / 2;
+    const px = MAP_OFFSET_X + building.position.x * TILE_SIZE + TILE_SIZE / 2;
+    const py = MAP_OFFSET_Y + building.position.y * TILE_SIZE + TILE_SIZE / 2;
     const c = this.greybox.createBuilding(px, py, building.type);
     c.setData('buildingId', building.id);
     this.buildingContainers.set(building.id, c);
