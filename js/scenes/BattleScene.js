@@ -20,8 +20,10 @@
  */
 
 import { GreyboxFactory, FACTION_COLORS } from '../ui/GreyboxFactory.js';
-import { EventBus } from '../core/EventBus.js';
+import { EventBus, BattleEvents } from '../core/EventBus.js';
 import { BattleLoop } from '../core/BattleLoop.js';
+import { SaveSubsystem } from '../core/SaveSubsystem.js';
+import { SaveData_Run, RunStatus } from '../core/SaveData_Run.js';
 import { InputSubsystem, InputEvents } from '../core/InputSubsystem.js';
 import { InputHandler } from '../core/InputHandler.js';
 import { SelectionManager, SelectionEvents } from '../core/SelectionManager.js';
@@ -131,10 +133,26 @@ export class BattleScene extends Phaser.Scene {
       this.selectionManager.handleTileHover(tile, this.time?.now ?? Date.now());
     });
 
-    // === 6. 启动 BattleLoop（首回合 TURN_START 自动触发，HUD/ActionPanel 即时显示） ===
+    // === 6. 自动保存（SaveSubsystem, T2.5） ===
+    // localStorage 存档：每回合结束（ROUND_END）+ Run 结束（BATTLE_WIN /
+    // BATTLE_LOSE）时快照当前战局。W2 只负责写档；W3 读档恢复用。
+    // storage 不可用（隐私模式 / quota 满 / 非浏览器环境）只降级为
+    // console.warn，绝不拖垮整个 scene 的创建。
+    this.runId = 'run-' + Date.now().toString(36);
+    try {
+      this.saveSystem = new SaveSubsystem();
+      this.eventBus.on(BattleEvents.ROUND_END, () => this._saveSnapshot(RunStatus.ACTIVE));
+      this.eventBus.on(BattleEvents.BATTLE_WIN, () => this._saveSnapshot(RunStatus.WON));
+      this.eventBus.on(BattleEvents.BATTLE_LOSE, () => this._saveSnapshot(RunStatus.LOST));
+    } catch (err) {
+      console.warn('[BattleScene] save subsystem unavailable:', err);
+      this.saveSystem = null;
+    }
+
+    // === 7. 启动 BattleLoop（首回合 TURN_START 自动触发，HUD/ActionPanel 即时显示） ===
     this.battleLoop.start();
 
-    // === 7. Debug FPS 文本（#debug 模式才显示）===
+    // === 8. Debug FPS 文本（#debug 模式才显示）===
     if (window.location.hash === '#debug') {
       const el = document.getElementById('debug-overlay');
       if (el) el.classList.add('show');
@@ -152,9 +170,9 @@ export class BattleScene extends Phaser.Scene {
       this.debugText.setText(
         `FPS: ${Math.round(this.game.loop.actualFps)} | ` +
         `BattleScene | ` +
-        `R${this.battleLoop?.roundNumber ?? 0} ` +
-        `P${this.battleLoop?.turnContext?.currentPlayerId ?? '-'} ` +
-        `Ph${this.battleLoop?.turnContext?.phase ?? '-'}`
+        `R${this.battleLoop?.round ?? 0} ` +
+        `P${this.battleLoop?.context?.currentPlayerId ?? '-'} ` +
+        `Ph${this.battleLoop?.context?.phase ?? '-'}`
       );
     }
   }
@@ -186,6 +204,32 @@ export class BattleScene extends Phaser.Scene {
       return;
     }
     // move / attack / build W2 stub: no-op（按钮 enabled 后会暴露给 W3）
+  }
+
+  /**
+   * Snapshot the live battle state into a SaveData_Run and persist it.
+   * Reads the live objects (BattleLoop + BattleMap) at call time — the
+   * EventBus handlers fire synchronously inside BattleLoop.advance(), so
+   * the state captured here is exactly the round-end / battle-end state.
+   * Never throws: save failures degrade to a warning (save is best-effort
+   * in W2, not a correctness requirement).
+   */
+  _saveSnapshot(status = RunStatus.ACTIVE) {
+    if (!this.saveSystem || !this.battleLoop || !this.battleMap) return;
+    try {
+      const run = new SaveData_Run({
+        runId: this.runId,
+        roundNumber: this.battleLoop.round,
+        phase: this.battleLoop.context.phase,
+        currentPlayerId: this.battleLoop.context.currentPlayerId,
+        players: this.battleLoop.players,
+        status,
+        map: this.battleMap.serialize(),
+      });
+      this.saveSystem.saveRun(run);
+    } catch (err) {
+      console.warn('[BattleScene] auto-save failed:', err);
+    }
   }
 
   _buildPhaserSource() {
