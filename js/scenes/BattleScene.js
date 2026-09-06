@@ -44,7 +44,7 @@ const MAP_OFFSET_Y = 32;
 // can tell from a glance at HUD (and from `[BattleScene] build=` in the
 // console) whether their browser is actually serving the latest push or
 // is still pinned to a stale CDN / Service-Worker / disk-cache copy.
-const BUILD_TAG = '76d8d80-w2-stub';
+const BUILD_TAG = 'a089ea4-t2.5-save';
 
 export class BattleScene extends Phaser.Scene {
   constructor() {
