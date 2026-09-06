@@ -1,0 +1,15 @@
+# web/.gitignore
+# Static site — no build artifacts by default. Add patterns as needed.
+
+# Future Vite / bundler scratch dirs
+node_modules/
+.vite/
+dist/
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+*.log
+
+# Local override (Phaser config, debug)
+.env.local
