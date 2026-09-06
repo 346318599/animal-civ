@@ -38,12 +38,26 @@ const TILE_SIZE = 32;
 const MAP_OFFSET_X = 16;
 const MAP_OFFSET_Y = 32;
 
+// Build marker — 推 animal-civ 时同步更新。Bumping this is how the user
+// can tell from a glance at HUD (and from `[BattleScene] build=` in the
+// console) whether their browser is actually serving the latest push or
+// is still pinned to a stale CDN / Service-Worker / disk-cache copy.
+const BUILD_TAG = '76d8d80-w2-stub';
+
 export class BattleScene extends Phaser.Scene {
   constructor() {
     super({ key: 'BattleScene' });
   }
 
   create() {
+    // Print the build marker the moment we enter create() — if the user
+    // sees the OLD tag in DevTools console, their browser is serving a
+    // cached copy and Ctrl+Shift+R did not flush the right cache.
+    console.info('[BattleScene] build=%s', BUILD_TAG);
+    // Also stamp it into the DOM so the user can see at a glance without
+    // opening DevTools.
+    const buildEl = document.getElementById('build-tag');
+    if (buildEl) buildEl.textContent = 'build=' + BUILD_TAG;
     // Fail-loud: any throw here used to silently leave BootScene on screen.
     // We log to console AND rethrow so DevTools shows the real error;
     // BootScene remains visible as the placeholder.
