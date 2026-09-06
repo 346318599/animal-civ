@@ -149,7 +149,27 @@ export class BattleScene extends Phaser.Scene {
 
   _onAction(action) {
     if (action === 'end-turn') {
+      // W2 stub: no AI and no roguelike event card exist yet, so the
+      // ENEMY / EVENT / END_ROUND phases are "unattended" — phase would
+      // otherwise sit frozen on enemy_turn until something ticks it.
+      // One end-turn click therefore always lands on the NEXT round's
+      // player_turn. From any starting phase we:
+      //   1. advance() once — if we're already on player_turn this
+      //      moves us into enemy_turn; if we're on a non-player phase
+      //      this is the next step in the graph.
+      //   2. then loop advance() until phase is player_turn (which may
+      //      be the same round if we started mid-graph, or the next
+      //      round if we wrapped through END_ROUND).
+      // W3 will replace this with: "if enemy_turn, let AI auto-resolve;
+      // else advance() once."
       this.battleLoop.advance();
+      while (
+        this.battleLoop.context.phase !== 'player_turn' &&
+        !this.battleLoop.isOver
+      ) {
+        this.battleLoop.advance();
+      }
+      return;
     }
     // move / attack / build W2 stub: no-op（按钮 enabled 后会暴露给 W3）
   }

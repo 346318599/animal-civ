@@ -5,16 +5,21 @@
 // Phaser rendering.
 //
 // Buttons (data-action attribute drives the matching constant):
-//   - end-turn  -> always enabled once a TURN_START has fired for the
-//                  player phase; disabled on ENEMY phase
-//   - move      -> enabled when a friendly unit is selected
-//   - attack    -> enabled when a friendly unit is selected AND there's
-//                  a valid enemy target on hover (W2 stub: just friendly selected)
+//   - end-turn  -> W2 stub: ALWAYS enabled once any TURN_START has
+//                  fired. W2 has no AI / event card yet, so the
+//                  player must be able to fast-forward through
+//                  ENEMY / EVENT / END_ROUND phases. BattleScene's
+//                  onAction handler loops BattleLoop.advance() until
+//                  phase === 'player_turn'. W3 will re-gate this to
+//                  === 'player_turn' once AI auto-resolves ENEMY.
+//   - move      -> W2 stub: enabled when a friendly unit is selected
+//                  AND phase is player_turn (real pathfinding: W3)
+//   - attack    -> W2 stub: same gate as move (real attack: W3)
 //   - build     -> W3+; always disabled in W2
 //
 // Events (BattleEvents catalog in core/EventBus.js):
-//   turn:start            { context: TurnContext } -> enable end-turn only on PLAYER phase
-//   turn:end              { context: TurnContext } -> disable end-turn (busy phase)
+//   turn:start            { context: TurnContext } -> enable end-turn
+//   turn:end              { context: TurnContext } -> keep end-turn enabled (W2 stub; W3 will disable on enemy phase)
 // Events (SelectionEvents from SelectionManager):
 //   selection:unit        { unitId, faction }      -> enable move/attack if friendly
 //   selection:target      { tile }                 -> (future) show attack target preview
@@ -109,11 +114,14 @@ export class ActionPanel {
 
   /** @private — recompute disabled state of every button. */
   _refresh() {
-    // Use TurnPhase constants (core/TurnContext.js) — string values are
-    // lowercase 'player_turn' / 'enemy_turn' / 'event_turn' / 'end_round'.
-    const canEndTurn = this._phase === 'player_turn';
-    const canMove    = this._hasSelection && this._friendlySelected && canEndTurn;
-    const canAttack  = this._hasSelection && this._friendlySelected && canEndTurn;
+    // W2 stub: end-turn is enabled as soon as ANY TURN_START has fired.
+    // (this._phase starts null and becomes a TurnPhase string on the
+    // first TURN_START; we want buttons enabled from round 1 onward.)
+    // W3 will narrow this to `=== 'player_turn'` once AI auto-resolves
+    // enemy / event phases.
+    const canEndTurn = this._phase !== null;
+    const canMove    = this._hasSelection && this._friendlySelected && this._phase === 'player_turn';
+    const canAttack  = this._hasSelection && this._friendlySelected && this._phase === 'player_turn';
 
     if (this._buttons['end-turn']) this._buttons['end-turn'].disabled = !canEndTurn;
     if (this._buttons['move'])     this._buttons['move'].disabled     = !canMove;
