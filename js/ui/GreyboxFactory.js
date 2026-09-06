@@ -28,8 +28,10 @@ const BUILDING_COLORS = {
   mine:     0x808080,  // 矿场（灰）
 };
 
+// Tile 合法集 (see web/js/core/Tile.js): plain/forest/mountain/water/desert.
+// Don't add 'grass' back; it's a T2.2 historical name that's gone.
 const TERRAIN_COLORS = {
-  grass:    0x40a040,
+  plain:    0x40a040,
   forest:   0x208030,
   mountain: 0x808080,
   water:    0x4060c0,
@@ -105,7 +107,7 @@ export class GreyboxFactory {
    * @param {string} terrain 地形类型
    * @returns {Phaser.GameObjects.Rectangle}
    */
-  createTile(x, y, terrain = 'grass') {
+  createTile(x, y, terrain = 'plain') {
     const color = TERRAIN_COLORS[terrain] || 0x808080;
     const rect = this.scene.add.rectangle(x, y, 32, 32, color);
     rect.setStrokeStyle(1, 0x000000, 0.2);

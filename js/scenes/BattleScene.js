@@ -210,7 +210,7 @@ export class BattleScene extends Phaser.Scene {
 
     for (let y = 0; y < ROWS; y++) {
       for (let x = 0; x < COLS; x++) {
-        const tile = this.battleMap.getTileAt(x, y);
+        const tile = this.battleMap.getTile(x, y);
         if (!tile) continue;
         const px = MAP_OFFSET_X + x * TILE_SIZE + TILE_SIZE / 2;
         const py = MAP_OFFSET_Y + y * TILE_SIZE + TILE_SIZE / 2;
@@ -229,7 +229,7 @@ export class BattleScene extends Phaser.Scene {
   }
 
   _renderUnit(unit) {
-    const tile = this.battleMap.getTileAt(unit.x, unit.y);
+    const tile = this.battleMap.getTile(unit.x, unit.y);
     if (!tile) return null;
     const px = MAP_OFFSET_X + unit.x * TILE_SIZE + TILE_SIZE / 2;
     const py = MAP_OFFSET_Y + unit.y * TILE_SIZE + TILE_SIZE / 2;
@@ -241,7 +241,7 @@ export class BattleScene extends Phaser.Scene {
   }
 
   _renderBuilding(building) {
-    const tile = this.battleMap.getTileAt(building.x, building.y);
+    const tile = this.battleMap.getTile(building.x, building.y);
     if (!tile) return null;
     const px = MAP_OFFSET_X + building.x * TILE_SIZE + TILE_SIZE / 2;
     const py = MAP_OFFSET_Y + building.y * TILE_SIZE + TILE_SIZE / 2;

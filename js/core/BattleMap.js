@@ -52,6 +52,19 @@ export class BattleMap {
     this._buildingMint = mintIdFactory('bld');
   }
 
+  /**
+   * Public read-only view of the underlying tiles grid. Index by
+   * `grid[y][x]`. The returned reference is the live array — callers
+   * that want to replace a Tile should still go through
+   * `setTile(x, y, tile)` so occupant/building references stay sane.
+   *
+   * Why expose it: renderers (BattleScene, future W3 path-preview layer)
+   * need to read tiles for drawing. Hiding the array behind a private
+   * field forces every consumer to add a new BattleMap method just to
+   * iterate; this is one of those "trust the in-process bus" cases.
+   */
+  get grid() { return this._tiles; }
+
   // === Grid queries ===
 
   isInBounds(x, y) {
@@ -70,6 +83,14 @@ export class BattleMap {
       }
     }
   }
+
+  /**
+   * Live iterables for renderer/AI consumers. Returns a fresh array
+   * each call (cheap: at most a handful of units/buildings in W2; we
+   * accept the allocation over the iterator-of-Map ceremony).
+   */
+  get units() { return [...this._unitById.values()]; }
+  get buildings() { return [...this._buildingById.values()]; }
 
   // === Unit lifecycle ===
 
